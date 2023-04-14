@@ -22,6 +22,9 @@ main(void)
   }
   dup(0);  // stdout
   dup(0);  // stderr
+  
+  mknod("null", NULL, 0);
+  open("null", O_RDWR);
 
   for(;;){
     printf("init: starting sh\n");
