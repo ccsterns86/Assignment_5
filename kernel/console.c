@@ -85,6 +85,8 @@ consoleread(int user_dst, uint64 dst, int n)
   int c;
   char cbuf;
 
+  // printf("Norm...");
+
   target = n;
   acquire(&cons.lock);
   while(n > 0){
@@ -126,6 +128,64 @@ consoleread(int user_dst, uint64 dst, int n)
   release(&cons.lock);
 
   return target - n;
+}
+
+int
+consolereadgaming(int user_dst, uint64 dst, int n)
+{
+  printf("Gaming...");
+  int c;
+  char cbuf;
+
+  acquire(&cons.lock);
+  // if no input, just return what was there before.
+  // if (cons.r == cons.w) {
+  //   release(&cons.lock);
+  //   return 3;
+  // }
+  while(cons.r == cons.w){
+    if(killed(myproc())){
+      release(&cons.lock);
+      return -1;
+    }
+    sleep(&cons.r, &cons.lock);
+  }
+  //if there is input!
+  c = cons.buf[cons.r++ % INPUT_BUF_SIZE];
+  // printf("working ");
+  // printf("%s ", cons.buf[0]);
+
+  // if(c == C('D')){  // end-of-file
+  //   if(n < target){
+  //     // Save ^D for next time, to make sure
+  //     // caller gets a 0-byte result.
+  //     cons.r--;
+  //   }
+  //   break;
+  // }
+  cons.r--;
+
+  // copy the input byte to the user-space buffer.
+  cbuf = c;
+  
+  if (cbuf) {
+    printf("Making this longer for reading Got: %s. ", cbuf);
+    either_copyout(user_dst, dst, &cbuf, 1);
+  }  
+    //return -1; upon failure
+
+  // dst++;
+  // --n;
+
+  // if(c == '\n'){
+  //   // a whole line has arrived, return to
+  //   // the user-level read().
+  //   break;
+  // }
+
+  release(&cons.lock);
+
+  return 1;
 }
 
 //
@@ -184,8 +244,23 @@ consoleintr(int c)
 int 
 consoleioctl(int user_dst, uint64 dst, int request)
 {
-  int res = -1;
-  return res;
+  //If non-blocking / non-echoing
+  if (request == _IO(CONSOLE_SETFL, CONSOLE_FL_NONBLOCK | CONSOLE_FL_NOECHO)) {
+    printf("Changing to Gaming mode!!");
+    devsw[CONSOLE].read = consolereadgaming;
+    return 0;
+    
+  }
+  
+  //If switching to normal mode
+  else if (request == _IO(CONSOLE_SETFL,0)) {
+    printf("Going back to Normal Mode.");
+    devsw[CONSOLE].read = consoleread;
+    return 1;
+  }
+  
+  //consoleread(user_dst, dst, 5);
+  return request;
 }	
 
 void
