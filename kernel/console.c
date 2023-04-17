@@ -138,20 +138,10 @@ consolereadgaming(int user_dst, uint64 dst, int n)
   char cbuf;
 
   acquire(&cons.lock);
-  // if no input, just return what was there before.
-  // if (cons.r == cons.w) {
-  //   sleep(&cons.r, &cons.lock);
-  // }
-  // while(cons.r == cons.w){
-  //   if(killed(myproc())){
-  //     release(&cons.lock);
-  //     return -1;
-  //   }
-  //   sleep(&cons.r, &cons.lock);
-  // }
   //if there is new input!
-  if (cons.buf[cons.r+1 % INPUT_BUF_SIZE] != '\0') {
-    c = cons.buf[cons.r++ % INPUT_BUF_SIZE];
+  if ((cons.e % INPUT_BUF_SIZE) > 0 && cons.e != 5) {
+    c = cons.buf[(cons.e-1)% INPUT_BUF_SIZE];
+    cons.r = cons.e-1;
 
     // copy the input byte to the user-space buffer.
     cbuf = c;
