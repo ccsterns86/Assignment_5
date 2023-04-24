@@ -141,7 +141,6 @@ consolereadgaming(int user_dst, uint64 dst, int n)
   //if there is new input!
   if ((cons.e % INPUT_BUF_SIZE) > 0) {
     c = cons.buf[(cons.e-1)% INPUT_BUF_SIZE];
-    cons.r = cons.e-1;
 
     // copy the input byte to the user-space buffer.
     cbuf = c;
@@ -212,9 +211,13 @@ consoleioctl(int user_dst, uint64 dst, int request)
 {
   //If non-blocking / non-echoing
   if (request == _IO(CONSOLE_SETFL, CONSOLE_FL_NONBLOCK | CONSOLE_FL_NOECHO)) {
+    acquire(&cons.lock);
     //clear buffer
     for (int i = 0; i < INPUT_BUF_SIZE; i++) { cons.buf[i] = '\0'; }
     devsw[CONSOLE].read = consolereadgaming;
+    cons.w = cons.e;
+    cons.r = cons.e;
+    release(&cons.lock);
     return 0;
     
   }
