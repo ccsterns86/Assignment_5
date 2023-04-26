@@ -58,6 +58,10 @@ struct data {
   char processed;
 };
 
+enum semaphpores {
+   SData = 1
+};
+
 struct shared_space {
   struct data a[N];  // array of N items
 };
@@ -68,6 +72,8 @@ volatile struct shared_space *s = (volatile struct shared_space*) 0x3FFFFFD000;
 // This method gets the next piece of data to be processed
 int get_item() 
 {
+   sem_wait(SData,1);
+   //printf("lock on data gained.\n");
    int i;
 
    for (i = 0; i < N; i++) 
@@ -80,31 +86,33 @@ int get_item()
    
    if (i==N)    // has all data been processed?
    {        
-     i = -1;    // yes, return -1 in place of the item index    
+     i = -1;    // yes, return -1 in place of the item index   
+     sem_post(SData,1); 
    }
 
    return i;    
 }
 
 // worker process - keeps getting items from the array until there is no more
-void worker()
+void worker(int thread)
 {
    int i;
- 
    for(i = get_item(); i>=0; i = get_item())
    {
-	// process i-th element of the array a[] by incrementing it 100000 times.
- 
-	// --------- do not modify the increment loop  --------
-	for (int j=0; j <100000; j++)
-	{
-	   s->a[i].value++;
-	}
-	// ---------------------------------------------------
-	
-	s->a[i].processed = 1;
+      // process i-th element of the array a[] by incrementing it 100000 times.
+      s->a[i].processed = 1;
+      //printf("Item %d completed use by thread %d.\n", i, thread);
+      sem_post(SData, 1);
+      // --------- do not modify the increment loop  --------
+      for (int j=0; j <100000; j++)
+      {
+         s->a[i].value++;
+      }
+      // ---------------------------------------------------
+      
+      
    }	
-
+   
    exit(0);
 }
 
@@ -112,6 +120,9 @@ int
 main(int argc, char *argv[])
 {
   int i;
+  //Open a new semaphore that controls if s
+  sem_open(SData, 1);
+  //printf("Initialising semaphore.\n");
 
   // initialise shared space
   printf("Initialising shared space...\n");
@@ -125,7 +136,7 @@ main(int argc, char *argv[])
   printf("Creating worker processes ...\n");
   for (i = 0; i<M; i++)
   {
-     if (fork() == 0) worker(); // start worker process
+     if (fork() == 0) worker(i); // start worker process
   }
 
   // wait for the child processes to terminate
@@ -133,6 +144,9 @@ main(int argc, char *argv[])
   {
      wait(0);
   } 
+  
+  //printf("Closing semaphore.\n");
+  sem_close(SData);
 
   // print out the processed array
   printf("Processed data in the array:\n");
