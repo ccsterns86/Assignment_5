@@ -31,8 +31,6 @@ int main(int argc, char* argv) {
         printf("Failure opening fs.img.\n");
         return -1;
     }
-    // Always starts with 1 boot block and 1 super block
-    printf("BS");
 
     // Go to location of Superblock
     if(lseek(fileP, BSIZE, 0) != BSIZE) {
@@ -55,6 +53,8 @@ int main(int argc, char* argv) {
     // printf("Number of i-nodes blocks: %d\n", numInode);
     // printf("Number of bitmap blocks: %d\n", numBitmap);
     // printf("Number of data blocks: %d\n", numData);
+    // Always starts with 1 boot block and 1 super block
+    printf("BS");
     for (int i = 0; i < numLogs; i++)
         printf("L");
     for (int i = 0; i < numInode; i++)
