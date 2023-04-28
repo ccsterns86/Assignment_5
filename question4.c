@@ -48,7 +48,8 @@ int main(int argc, char* argv) {
     int numLogs = sb.nlog;
     int numInode = sb.bmapstart - sb.inodestart;
     int numData = sb.nblocks;
-    int numBitmap = sb.size - 2 - numLogs - numInode - numData;
+    // int numBitmap = sb.size - 2 - numLogs - numInode - numData;
+    int numBitmap = ((sb.size / 8) / 1024) + 1;
     // printf("Number of log blocks: %d\n", numLogs);
     // printf("Number of i-nodes blocks: %d\n", numInode);
     // printf("Number of bitmap blocks: %d\n", numBitmap);

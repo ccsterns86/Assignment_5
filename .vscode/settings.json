@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "stdarg.h": "c",
+        "__config": "c",
+        "istream": "c",
+        "locale": "c",
+        "spinlock.h": "c",
+        "riscv.h": "c",
+        "types.h": "c"
+    }
+}

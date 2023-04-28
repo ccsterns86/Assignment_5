@@ -1,3 +1,6 @@
+// Cassandra Sterns       SID: 22209739
+// Ethan Doyle            SID: 22210635
+
 #include "kernel/types.h"
 #include "kernel/riscv.h"
 #include "kernel/memlayout.h"

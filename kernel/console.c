@@ -1,4 +1,7 @@
 //
+// Cassandra Sterns       SID: 22209739
+// Ethan Doyle            SID: 22210635
+//
 // Console input and output, to the uart.
 // Reads are line at a time.
 // Implements special input characters:
